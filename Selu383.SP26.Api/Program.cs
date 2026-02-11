@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Selu383.SP26.Api.Data;
 using Selu383.SP26.Api.Features.Locations;
 using Selu383.SP26.Api.Features.User;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,12 @@ using (var scope = app.Services.CreateScope())
             await userManager.CreateAsync(user, password);      // Identity handles hashing
             await userManager.AddToRoleAsync(user, role);       // assigns user to role
         }
+
+        if (!await userManager.IsInRoleAsync(user, role))
+        {
+            await userManager.AddToRoleAsync(user, role);
+        }
+
         return user;
     }
 

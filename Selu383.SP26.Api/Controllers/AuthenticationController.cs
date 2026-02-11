@@ -32,7 +32,33 @@ public class AuthenticationController(
 
         return Ok(new { Username = user.UserName, Id = user.Id, Roles = roles.ToArray() });
     }
+
+    [HttpPost("logout")]
+        public async Task<ActionResult> Logout()
+    {
+        await signInManager.SignOutAsync();
+        return Ok();
+    }
+
+    [HttpGet("me")]
+    public async Task<ActionResult<UserDto>> Me()
+    {
+        if (!User.Identity.IsAuthenticated)
+            return Unauthorized();
+        var user = await userManager.GetUserAsync(User);
+        var roles = await userManager.GetRolesAsync(user);
+        return Ok(new UserDto
+        {
+            Id = user.Id,
+            UserName = user.UserName,
+            Roles = roles.ToArray()
+        });
+    }
+
 }
+
+
+
 public class LoginDto
 {
     public string UserName { get; set; }
