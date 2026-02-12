@@ -43,8 +43,6 @@ public class LocationsController(
             TableCount = result.TableCount,
         });
     }
-
-    [HttpGet("{id}")]
     [Authorize(Roles = "Admin")]
 
     // Only Admins can create locations
@@ -70,8 +68,8 @@ public class LocationsController(
     }
 
     // Only Admins can update locations
-    [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
+    [HttpPut("{id}")]
     public ActionResult<LocationDto> Update(int id, LocationDto dto)
     {
         if (dto.TableCount < 1 || string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Address))
@@ -95,8 +93,8 @@ public class LocationsController(
     }
 
     // Only Admins can delete locations
-    [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
     public ActionResult Delete(int id)
     {
         var location = dataContext.Set<Location>()

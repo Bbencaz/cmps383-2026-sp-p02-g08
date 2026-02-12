@@ -16,6 +16,8 @@ builder.Services.AddIdentity<User, Role>
 ().AddEntityFrameworkStores<DataContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.AddAuthorization();
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/api/authentication/login"; // where unauthenticated users get redirected
