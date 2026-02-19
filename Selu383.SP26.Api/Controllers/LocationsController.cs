@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP26.Api.Data;
 using Selu383.SP26.Api.Features.Locations;
@@ -23,6 +24,7 @@ public class LocationsController(
                 Name = x.Name,
                 Address = x.Address,
                 TableCount = x.TableCount,
+                ManagerId = x.ManagerId
             });
     }
 
@@ -41,22 +43,32 @@ public class LocationsController(
             Name = result.Name,
             Address = result.Address,
             TableCount = result.TableCount,
+            ManagerId = result.ManagerId
         });
     }
     [Authorize(Roles = "Admin")]
 
-    // Only Admins can create locations
+
     [HttpPost]
     public ActionResult<LocationDto> Create(LocationDto dto)
     {
         if (dto.TableCount < 1 || string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Address))
             return BadRequest();
 
+        if (dto.ManagerId != null)
+        {
+            var userExists = dataContext.Users.Any(u => u.Id == dto.ManagerId);
+            if (!userExists)
+                return BadRequest("User with this Id does not exist.");
+        }
+
+
         var location = new Location
         {
             Name = dto.Name,
             Address = dto.Address,
             TableCount = dto.TableCount,
+            ManagerId = dto.ManagerId
         };
 
         dataContext.Set<Location>().Add(location);
@@ -67,8 +79,8 @@ public class LocationsController(
         return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
     }
 
-    // Only Admins can update locations
-    [Authorize(Roles = "Admin")]
+
+    [Authorize]
     [HttpPut("{id}")]
     public ActionResult<LocationDto> Update(int id, LocationDto dto)
     {
@@ -80,6 +92,8 @@ public class LocationsController(
 
         if (location == null)
             return NotFound();
+       
+        var isAdmin = User.IsInRole("Admin");
 
         location.Name = dto.Name;
         location.Address = dto.Address;
@@ -92,7 +106,6 @@ public class LocationsController(
         return Ok(dto);
     }
 
-    // Only Admins can delete locations
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public ActionResult Delete(int id)
