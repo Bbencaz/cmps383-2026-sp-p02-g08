@@ -95,6 +95,30 @@ public class LocationsController(
        
         var isAdmin = User.IsInRole("Admin");
 
+        if (!isAdmin)
+        {
+            var userIdValue = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (!int.TryParse(userIdValue, out var userId))
+                return Forbid();
+
+            if (location.ManagerId == null || location.ManagerId != userId)
+                return Forbid();
+
+
+        }
+        
+        if (isAdmin)
+        {
+            if (dto.ManagerId != null)
+            {
+                var userExists = dataContext.Users.Any(u =>  u.Id == dto.ManagerId);
+                if (!userExists)
+                    return BadRequest();
+            }
+            location.ManagerId = dto.ManagerId;
+        }
+
         location.Name = dto.Name;
         location.Address = dto.Address;
         location.TableCount = dto.TableCount;
@@ -102,6 +126,7 @@ public class LocationsController(
         dataContext.SaveChanges();
 
         dto.Id = location.Id;
+        dto.ManagerId = location.ManagerId;
 
         return Ok(dto);
     }
